@@ -3,6 +3,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 !include "LogicLib.nsh"
 !include WordFunc.nsh
+!include "FileFunc.nsh"
 !insertmacro VersionCompare
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -20,7 +21,7 @@ LangString LanguageCode ${LANG_ENGLISH}  "en"
 !define INSTPROG "Radegast"
 !define APPNAME "RadegastVoicepack"
 !define VERSION "1.0"
-
+!define UNINST_REG "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
 ; The name of the installer
 Name "${APPNAME}"
 
@@ -58,16 +59,19 @@ Section "${APPNAME} core (required)"
   SetOutPath $INSTDIR
 
   ; Put file there
-  File /x *.nsi /x *.bak /x *~ *.*
+  File /x *.nsi /x *.bak /x *~ /x .* *.*
   
   ; Write the installation path into the registry
   WriteRegStr HKLM "SOFTWARE\${APPNAME}" "Install_Dir" "$INSTDIR"
   
   ; Write the uninstall keys for Windows
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME}"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" '"$INSTDIR\uninstall_voice.exe"'
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "NoModify" 1
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "NoRepair" 1
+  WriteRegStr HKLM ${UNINST_REG} "DisplayName" "${APPNAME}"
+  WriteRegStr HKLM ${UNINST_REG} "UninstallString" '"$INSTDIR\uninstall_voice.exe"'
+  WriteRegStr HKLM ${UNINST_REG} "QuietUninstallString" '"$INSTDIR\uninstall_voice.exe" /S'
+  WriteRegStr HKLM ${UNINST_REG} "Publisher" "Radegast Development Team"
+  WriteRegStr HKLM ${UNINST_REG} "DisplayVersion" "${VERSION}"
+  WriteRegDWORD HKLM ${UNINST_REG} "NoModify" 1
+  WriteRegDWORD HKLM ${UNINST_REG} "NoRepair" 1
   WriteUninstaller "uninstall_voice.exe"
   
 SectionEnd
@@ -78,7 +82,7 @@ SectionEnd
 Section "Uninstall"
   
   ; Remove registry keys
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
+  DeleteRegKey HKLM ${UNINST_REG}
   DeleteRegKey HKLM "SOFTWARE\${APPNAME}"
 
   ; Remove files and uninstaller
